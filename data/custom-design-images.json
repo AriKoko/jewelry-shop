@@ -1,0 +1,14 @@
+{
+  "baseTypes": {
+    "necklace": "/images/uploads/3u9bpjGbvr.png",
+    "bracelet": "/images/uploads/veJv1A8hGb.png"
+  },
+  "braceletModels": {
+    "1": "/images/placeholders/jewelry-placeholder.jpg",
+    "2": "/images/placeholders/jewelry-placeholder.jpg"
+  },
+  "necklaceModels": {
+    "5": "/images/placeholders/jewelry-placeholder.jpg",
+    "6": "/images/placeholders/jewelry-placeholder.jpg"
+  }
+}
