@@ -182,13 +182,13 @@ export default function FavoritesPage() {
         </div>
       ) : (
         <>
-          {Array.isArray(products) && products.length > 0 ? (
-            <ProductGrid products={products} />
-          ) : (
+            {Array.isArray(products) && products.length > 0 ? (
+              <ProductGrid products={products} />
+            ) : (
             <div className="text-center py-8">
-              <p>לא נמצאו מוצרים במועדפים</p>
-            </div>
-          )}
+                <p>לא נמצאו מוצרים במועדפים</p>
+              </div>
+            )}
 
           <div className="mt-10 text-center">
             <Link href="/collection" className="btn-primary">

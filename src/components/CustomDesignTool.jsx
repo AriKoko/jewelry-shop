@@ -23,6 +23,7 @@ const CustomDesignTool = () => {
   const [charmOptions, setCharmOptions] = useState([])
   const [isLoadingCharms, setIsLoadingCharms] = useState(true)
   const [designImages, setDesignImages] = useState(null)
+  const [metalType, setMetalType] = useState('silver') // כסף או זהב
   
   // טעינת התליונים מה-API בעת טעינת הקומפוננטה
   useEffect(() => {
@@ -225,6 +226,7 @@ const CustomDesignTool = () => {
         baseType: selectedBaseType,
         modelName: selectedProduct.name,
         modelPrice: selectedProduct.price,
+        material: metalType,
         selectedCharms: selectedCharmDetails,
         notes: notes
       }
@@ -252,6 +254,42 @@ const CustomDesignTool = () => {
     setNotes(e.target.value)
   }
   
+  const getMetalGradient = () => {
+    return metalType === 'gold'
+      ? 'linear-gradient(135deg, #FFD700 0%, #FFF8DC 60%, #E5C100 100%)'
+      : 'linear-gradient(135deg, #C0C0C0 0%, #F8F8FF 60%, #A9A9A9 100%)';
+  };
+  
+  const renderMetalTypeSelector = () => (
+    <div className="flex flex-col items-center mb-4">
+      <span className="font-bold text-lg mb-2">בחר/י חומר:</span>
+      <div className="flex gap-6 items-center">
+        <label className="flex items-center gap-2 cursor-pointer text-base font-medium">
+          <input
+            type="radio"
+            name="metalType"
+            value="silver"
+            checked={metalType === 'silver'}
+            onChange={() => setMetalType('silver')}
+            className="accent-gray-400 w-5 h-5"
+          />
+          <span>כסף</span>
+        </label>
+        <label className="flex items-center gap-2 cursor-pointer text-base font-medium">
+          <input
+            type="radio"
+            name="metalType"
+            value="gold"
+            checked={metalType === 'gold'}
+            onChange={() => setMetalType('gold')}
+            className="accent-yellow-400 w-5 h-5"
+          />
+          <span>זהב</span>
+        </label>
+      </div>
+    </div>
+  );
+  
   // הצגת התוכן בהתאם לשלב הנוכחי
   const renderStepContent = () => {
     switch (currentStep) {
@@ -268,27 +306,27 @@ const CustomDesignTool = () => {
                 const img = option.id === 'necklace' ? (designImages?.baseTypes?.necklace) : (designImages?.baseTypes?.bracelet)
                 const optWithImg = { ...option, image: img || option.image }
                 return (
-                  <div 
-                    key={option.id}
-                    className={`border rounded-lg p-5 cursor-pointer transition-all duration-300 ${
-                      selectedBaseType === option.id 
-                        ? 'border-accent bg-accent/10 shadow-md scale-105' 
-                        : 'border-gray-200 hover:border-accent/50 hover:bg-gray-50 hover:scale-[1.02]'
-                    }`}
-                    onClick={() => setSelectedBaseType(option.id)}
-                  >
-                    <div className="flex flex-col h-full">
-                      <div className="relative h-48 mb-3 overflow-hidden rounded-md group">
-                        <Image
+                <div 
+                  key={option.id}
+                  className={`border rounded-lg p-5 cursor-pointer transition-all duration-300 ${
+                    selectedBaseType === option.id 
+                      ? 'border-accent bg-accent/10 shadow-md scale-105' 
+                      : 'border-gray-200 hover:border-accent/50 hover:bg-gray-50 hover:scale-[1.02]'
+                  }`}
+                  onClick={() => setSelectedBaseType(option.id)}
+                >
+                  <div className="flex flex-col h-full">
+                    <div className="relative h-48 mb-3 overflow-hidden rounded-md group">
+                      <Image
                           src={optWithImg.image}
                           alt={optWithImg.name}
-                          fill
-                          className={`object-cover transform transition-transform duration-700 ${
+                        fill
+                        className={`object-cover transform transition-transform duration-700 ${
                             selectedBaseType === optWithImg.id ? 'scale-110' : 'group-hover:scale-105'
-                          }`}
-                        />
-                      </div>
-                      <div className="flex justify-between items-center mt-auto">
+                        }`}
+                      />
+                    </div>
+                    <div className="flex justify-between items-center mt-auto">
                         <h4 className="font-medium text-lg">{optWithImg.name}</h4>
                         <p className="text-accent font-semibold">₪{optWithImg.price.toFixed(2)}</p>
                       </div>
@@ -310,6 +348,7 @@ const CustomDesignTool = () => {
         )
       
       case 2:
+        const isRegular = (selectedBaseType === 'necklace' && braceletType === 5) || (selectedBaseType === 'bracelet' && braceletType === 1);
         return (
           <div className={`space-y-6 transition-all duration-500 transform ${
             slideDirection === 'next' ? 'translate-x-0 opacity-100' : 
@@ -318,10 +357,10 @@ const CustomDesignTool = () => {
             <h3 className="text-xl font-medium text-gray-800">
               {selectedBaseType === 'necklace' ? 'בחר/י סוג שרשרת' : 'בחר/י סוג צמיד'}
             </h3>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {selectedBaseType === 'necklace' ? 
-                necklaceOptions.map((option) => (
+              {(selectedBaseType === 'necklace' ? necklaceOptions : braceletOptions).map((option) => {
+                const showMetal = (selectedBaseType === 'necklace' && option.id === 5) || (selectedBaseType === 'bracelet' && option.id === 1);
+                return (
                   <div 
                     key={option.id}
                     className={`border rounded-lg p-4 cursor-pointer transition-all duration-300 ${
@@ -331,8 +370,8 @@ const CustomDesignTool = () => {
                     } ${option.isGlitter ? 'glitter-effect' : ''}`}
                     onClick={() => setBraceletType(option.id)}
                   >
-                    <div className="flex flex-col h-full">
-                      <div className="relative h-48 mb-3 overflow-hidden rounded-md group">
+                    <div className="flex flex-col h-full items-center">
+                      <div className="relative h-48 w-full mb-3 overflow-hidden rounded-md group flex items-center justify-center">
                         <Image
                           src={option.image}
                           alt={option.name}
@@ -345,50 +384,17 @@ const CustomDesignTool = () => {
                           <div className="absolute inset-0 glitter-overlay opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                         )}
                       </div>
-                      <div className="flex justify-between items-center mt-auto">
+                      {showMetal && braceletType === option.id && renderMetalTypeSelector()}
+                      <div className="flex justify-between items-center mt-auto w-full">
                         <h4 className="font-medium">{option.name}</h4>
-                        {option.priceModifier && (
+                        {option.priceModifier > 0 && (
                           <p className="text-accent text-sm font-medium">+{option.priceModifier} ₪</p>
                         )}
                       </div>
                     </div>
                   </div>
-                ))
-                :
-                braceletOptions.map((option) => (
-                  <div 
-                    key={option.id}
-                    className={`border rounded-lg p-4 cursor-pointer transition-all duration-300 ${
-                      braceletType === option.id 
-                        ? 'border-accent bg-accent/10 shadow-md scale-105' 
-                        : 'border-gray-200 hover:border-accent/50 hover:bg-gray-50 hover:scale-[1.02]'
-                    } ${option.isGlitter ? 'glitter-effect' : ''}`}
-                    onClick={() => setBraceletType(option.id)}
-                  >
-                    <div className="flex flex-col h-full">
-                      <div className="relative h-48 mb-3 overflow-hidden rounded-md group">
-                        <Image
-                          src={option.image}
-                          alt={option.name}
-                          fill
-                          className={`object-cover transform transition-transform duration-700 ${
-                            braceletType === option.id ? 'scale-110' : 'group-hover:scale-105'
-                          }`}
-                        />
-                        {option.isGlitter && (
-                          <div className="absolute inset-0 glitter-overlay opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                        )}
-                      </div>
-                      <div className="flex justify-between items-center mt-auto">
-                        <h4 className="font-medium">{option.name}</h4>
-                        {option.priceModifier && (
-                          <p className="text-accent text-sm font-medium">+{option.priceModifier} ₪</p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))
-              }
+                );
+              })}
             </div>
             <div className="flex justify-between pt-4">
               <button 

@@ -270,7 +270,7 @@
       @apply flex flex-col;
     }
   }
-}
+} 
 
 /* אפקט חשיפה בגלילה */
 .reveal{opacity:0;transform:translateY(20px);transition:opacity .6s ease,transform .6s ease;}
