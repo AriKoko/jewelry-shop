@@ -14,10 +14,88 @@ import Link from 'next/link';
 
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState('inventory');
+  const [backupLoading, setBackupLoading] = useState(false);
+  const [restoreLoading, setRestoreLoading] = useState(false);
+  const [backupError, setBackupError] = useState(null);
+  const [restoreError, setRestoreError] = useState(null);
+  const [backupSuccess, setBackupSuccess] = useState(null);
+  const [restoreSuccess, setRestoreSuccess] = useState(null);
   
+  // פונקציה להורדת גיבוי
+  const handleBackup = async () => {
+    setBackupLoading(true);
+    setBackupError(null);
+    setBackupSuccess(null);
+    try {
+      const res = await fetch('/api/admin/db-backup');
+      if (!res.ok) throw new Error('שגיאה בגיבוי הדאטהבייס');
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'mongo-backup.zip';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setBackupSuccess('הגיבוי ירד בהצלחה!');
+    } catch (err) {
+      setBackupError(err.message);
+    } finally {
+      setBackupLoading(false);
+    }
+  };
+
+  // פונקציה להעלאת גיבוי ושחזור
+  const handleRestore = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setRestoreLoading(true);
+    setRestoreError(null);
+    setRestoreSuccess(null);
+    try {
+      const formData = new FormData();
+      formData.append('backup', file);
+      const res = await fetch('/api/admin/db-restore', {
+        method: 'POST',
+        body: formData,
+      });
+      if (!res.ok) throw new Error('שגיאה בשחזור הדאטהבייס');
+      setRestoreSuccess('הדאטהבייס שוחזר בהצלחה!');
+    } catch (err) {
+      setRestoreError(err.message);
+    } finally {
+      setRestoreLoading(false);
+    }
+  };
+
   return (
     <div className="container-custom py-8">
       <h1 className="text-3xl font-bold mb-6 text-center">פאנל ניהול</h1>
+      
+      {/* כפתורי גיבוי ושחזור */}
+      <div className="flex flex-col md:flex-row gap-4 justify-center items-center mb-6">
+        <button
+          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded disabled:opacity-50"
+          onClick={handleBackup}
+          disabled={backupLoading}
+        >
+          {backupLoading ? 'מגבה...' : 'גיבוי והורדת הדאטהבייס'}
+        </button>
+        <label className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded cursor-pointer disabled:opacity-50">
+          {restoreLoading ? 'משחזר...' : 'שחזור/העלאת דאטהבייס'}
+          <input
+            type="file"
+            accept=".zip,.bson,.gz"
+            onChange={handleRestore}
+            className="hidden"
+            disabled={restoreLoading}
+          />
+        </label>
+      </div>
+      {backupError && <div className="text-center text-red-500 mb-2">{backupError}</div>}
+      {backupSuccess && <div className="text-center text-green-600 mb-2">{backupSuccess}</div>}
+      {restoreError && <div className="text-center text-red-500 mb-2">{restoreError}</div>}
+      {restoreSuccess && <div className="text-center text-green-600 mb-2">{restoreSuccess}</div>}
       
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
         {/* לשוניות ניווט */}
